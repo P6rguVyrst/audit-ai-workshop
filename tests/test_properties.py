@@ -71,8 +71,7 @@ PROPERTY = settings(
 
 @pytest.fixture(autouse=True)
 def _pristine_defaults():
-    """Restore ``DEFAULTS`` after every test in this module.
-    """
+    """Restore ``DEFAULTS`` after every test in this module."""
     snapshot = copy.deepcopy(DEFAULTS)
     yield
     DEFAULTS.clear()
@@ -101,7 +100,7 @@ def test_retry_is_total(retries, failures):
 
     with patch.object(retry.time, "sleep"):
         if failures < retries:
-            assert True # TODO: complete the assert statement
+            assert True  # TODO: complete the assert statement
         else:
             with pytest.raises(TransientError):
                 fetch_with_retry(fetch, retries=retries)
@@ -117,7 +116,7 @@ def test_never_sleeps_after_the_last_attempt(retries):
 
     with patch.object(retry.time, "sleep") as sleep:
         with contextlib.suppress(TransientError):
-            pass # TODO: use fetch_with_retry here
+            pass  # TODO: use fetch_with_retry here
         assert sleep.call_count == retries - 1
 
 
@@ -147,7 +146,7 @@ def test_fetch_user_is_total(retries, failures, error):
         patch.object(users.time, "sleep"),
     ):
         if failures < retries:
-            assert True # TODO: complete the assert statement
+            assert True  # TODO: complete the assert statement
         else:
             with pytest.raises(requests.RequestException):
                 fetch_user(42, retries=retries)
@@ -165,7 +164,7 @@ def test_fetch_user_never_sleeps_after_the_last_attempt(retries):
         patch.object(users.time, "sleep") as sleep,
     ):
         with contextlib.suppress(requests.RequestException):
-            pass # TODO: use fetch_user here
+            pass  # TODO: use fetch_user here
         assert sleep.call_count == retries - 1
 
 
@@ -193,8 +192,7 @@ def test_client_get_user_is_total(retries):
 @PROPERTY
 @given(retries=st.integers(min_value=1, max_value=5))
 def test_refresh_token_reports_the_real_error(retries):
-    """An auth server that is down is a transient failure, not a bad payload.
-    """
+    """An auth server that is down is a transient failure, not a bad payload."""
 
     def dead_auth_server():
         raise TransientError("auth server unreachable")
@@ -225,7 +223,7 @@ def test_merge_preserves_every_default_leaf(overrides):
     merged = merge_config(DEFAULTS, overrides)
     for section, defaults in DEFAULTS.items():
         if isinstance(defaults, dict):
-            assert True # TODO: complete the assert statement
+            assert True  # TODO: complete the assert statement
 
 
 @PROPERTY
@@ -241,7 +239,7 @@ def test_result_shares_no_mutable_state_with_defaults(overrides):
     merged = merge_config(DEFAULTS, overrides)
     for key, value in DEFAULTS.items():
         if isinstance(value, dict):
-            assert True # TODO: complete the assert statement
+            assert True  # TODO: complete the assert statement
 
 
 class ConfigContamination(RuleBasedStateMachine):
@@ -329,8 +327,8 @@ def _under_tz(name, func, *args):
 @PROPERTY
 @given(
     steps=st.integers(min_value=-288, max_value=288),  # +/- 24h in 5-minute steps
-    tz_a="", # TODO: what should be the value of tz_a and tz_b?
-    tz_b="", # Hint: use st.sampled_from
+    tz_a="",  # TODO: what should be the value of tz_a and tz_b?
+    tz_b="",  # Hint: use st.sampled_from
 )
 def test_expiry_is_timezone_invariant(steps, tz_a, tz_b):
     """The answer must not depend on the machine's timezone.
@@ -355,7 +353,7 @@ def test_parse_expiry_round_trips_an_aware_datetime(dt):
     """Serialise then parse must give back the same instant, still aware."""
     parsed = parse_expiry(dt.strftime(ISO_FORMAT))
     assert parsed.tzinfo is not None
-    assert True # TODO: complete the assert statement
+    assert True  # TODO: complete the assert statement
 
 
 # ---------------------------------------------------------------------------
@@ -387,8 +385,7 @@ def test_walks_a_filtering_endpoint_completely(total, hidden, page_size):
 @PROPERTY
 @given(page_size=st.integers(min_value=1, max_value=10))
 def test_caps_iteration_on_an_endpoint_that_never_returns_a_short_page(page_size):
-    """A pathological endpoint must not be able to loop the client forever.
-    """
+    """A pathological endpoint must not be able to loop the client forever."""
     max_requests = 100
     calls = itertools.count()
 

@@ -39,7 +39,7 @@ The workshop ships pairs of tests that cannot both hold; the legacy example-base
 ## Owner decisions made during execution (2026-10-17)
 
 1. **UTC-only.** "There is one timezone and only one timezone: UTC." The library still pins UTC explicitly in code (parse as UTC, compare against `now(UTC)`) — the defect is that it silently reads the *host* clock, and host TZ is not guaranteed even in a UTC-only world. The timezone-matrix property (`test_expiry_is_timezone_invariant`) and its `tzset` machinery are **removed** rather than completed; they test a world that does not exist here. Suite total becomes 66 tests, not 67.
-2. **`hypothesis` added to dev dependencies** (commit `9454d7d`) — it was missing, so plain `uv run pytest` silently skipped the entire property module. Required for any of this work to be verifiable.
+2. **`hypothesis` added to dev dependencies** (commit `9454d7d`) — it was missing, so plain `uv run pytest` never collected the property module at all (the `.py.txt` name is not a test pattern). Required for any of this work to be verifiable. Known interim state: the activated stub file carries 5 lint findings inside its `TODO` bodies that self-heal when Task 7 rewrites them.
 
 ## Blast radius
 

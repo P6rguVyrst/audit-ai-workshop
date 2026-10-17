@@ -43,7 +43,9 @@ Expected: **10 failed, 57 passed** — the failures are the property tests liste
 | `test_parse_expiry_round_trips_an_aware_datetime` | `parse_expiry` returns a naive datetime |
 | `test_walks_a_filtering_endpoint_completely` | short-page heuristic stops early (and the stub returns `[]`) |
 
-> **Amendment during execution:** `hypothesis` was missing from the `dev` dependency group — plain `uv run pytest` silently skipped the whole property module (54 passed / 1 skipped). Added in commit `9454d7d` (`uv add --group dev hypothesis`); the 10-failed/57-passed baseline above is now reachable without `--with`.
+> **Amendment during execution:** `hypothesis` was missing from the `dev` dependency group — without it, plain `uv run pytest` never collected the property module at all (54 passed; the `.py.txt` file is not a test pattern, so the `importorskip` guard never even ran). Added in commit `9454d7d` (`uv add --group dev hypothesis`); the 10-failed/57-passed baseline above is now reachable without `--with`.
+>
+> **Known interim state:** activating the file pulls its pre-existing stub content into lint scope, so `uv run ruff check .` reports 5 findings (F841/B007 inside `TODO` stub bodies) until Task 7 rewrites them — this self-heals. `ruff format` has been applied to the file so the format check stays green throughout.
 
 - [ ] **Step 3: Commit the rename**
 
