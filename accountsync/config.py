@@ -10,6 +10,7 @@ Configuration comes from three places, lowest precedence first:
 low-level entry point used by library callers that manage their own overrides.
 """
 
+import copy
 import json
 import os
 from pathlib import Path
@@ -36,12 +37,22 @@ ENV_OVERRIDES = {
 def merge_config(defaults, overrides):
     """Merge ``overrides`` on top of ``defaults`` and return a new config.
 
-    The original ``defaults`` mapping is left untouched, so a single
-    module-level default config can be safely reused across callers.
+    Nested sections are deep-merged, so overriding one key keeps the
+    section's other keys, and the result shares no mutable state with
+    ``defaults``: a single module-level default config can be safely
+    reused across callers.
     """
-    merged = dict(defaults)
-    merged.update(overrides)
+    merged = copy.deepcopy(defaults)
+    _deep_merge(merged, overrides)
     return merged
+
+
+def _deep_merge(target, overrides):
+    for key, value in overrides.items():
+        if isinstance(value, dict) and isinstance(target.get(key), dict):
+            _deep_merge(target[key], value)
+        else:
+            target[key] = copy.deepcopy(value)
 
 
 def load_config(overrides=None):
