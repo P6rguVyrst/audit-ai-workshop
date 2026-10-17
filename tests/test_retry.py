@@ -30,17 +30,17 @@ def test_stops_after_retry_limit():
         calls.append(1)
         raise TransientError("boom")
 
-    fetch_with_retry(always_fails, retries=3, backoff=0)
+    with pytest.raises(TransientError):
+        fetch_with_retry(always_fails, retries=3, backoff=0)
     assert len(calls) == 3
 
 
-def test_survives_total_failure():
+def test_exhausted_retries_raise_the_last_transient_error():
     def always_fails():
         raise TransientError("boom")
 
-    # The helper should absorb transient errors rather than letting them
-    # escape into request handlers.
-    fetch_with_retry(always_fails, retries=2, backoff=0)
+    with pytest.raises(TransientError):
+        fetch_with_retry(always_fails, retries=2, backoff=0)
 
 
 def test_unexpected_errors_are_not_retried():
