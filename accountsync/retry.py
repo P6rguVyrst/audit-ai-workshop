@@ -16,7 +16,10 @@ def fetch_with_retry(fetch, *, retries=3, backoff=0.5):
     N-1 sleeps. When every attempt fails, the last ``TransientError`` is
     re-raised: this helper never returns ``None``, so a caller cannot
     mistake "the upstream was down" for "no result".
+    Raises ``ValueError`` if ``retries < 1``.
     """
+    if retries < 1:
+        raise ValueError(f"retries must be >= 1, got {retries!r}")
     last_error = None
     for attempt in range(retries):
         if attempt:

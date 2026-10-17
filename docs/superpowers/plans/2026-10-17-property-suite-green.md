@@ -673,7 +673,7 @@ Expected: all PASS.
 - [ ] **Step 4: Coverage**
 
 Run: `make cov`
-Expected: all `accountsync` modules at 100% line and branch coverage (the new `raise last_error`, `max_pages` loop and deep-merge branches are exercised by the property suite; if any line is missed, add a focused example-based test for it before committing).
+Expected: coverage 94% total, identical to base, with all five fixed modules at 100% line and branch (the new `raise last_error`, `max_pages` loop and deep-merge branches are exercised by the property suite; if any line is missed, add a focused example-based test for it before committing).
 
 - [ ] **Step 5: Final commit (if Steps 1–4 produced changes)**
 

@@ -12,7 +12,10 @@ def fetch_user(user_id, retries=3, backoff=0.5):
 
     Sleeps only between attempts. When every attempt fails, the last
     ``RequestException`` is re-raised rather than returning ``None``.
+    Raises ``ValueError`` if ``retries < 1``.
     """
+    if retries < 1:
+        raise ValueError(f"retries must be >= 1, got {retries!r}")
     last_error = None
     for attempt in range(retries):
         if attempt:

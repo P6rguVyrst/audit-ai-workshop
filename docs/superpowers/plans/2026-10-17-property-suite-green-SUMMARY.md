@@ -43,10 +43,10 @@ The workshop ships pairs of tests that cannot both hold; the legacy example-base
 
 ## Blast radius
 
-Library: `retry.py`, `users.py`, `config.py`, `auth.py`, `pagination.py`, one wrapper in `client.py`. Tests: complete 9 stubs and remove the tz-matrix property in `test_properties.py`; update 8 legacy tests in `test_retry.py`, `test_users.py`, `test_client.py`, `test_cli.py`, `test_pagination.py` + the naive-clock `stamp()` helpers (same commit as the auth fix, or the suite becomes host-clock-dependent).
+Library: `retry.py`, `users.py`, `config.py`, `auth.py`, `pagination.py`, one wrapper in `client.py`. Tests: complete 9 stubs and remove the tz-matrix property in `test_properties.py`; update 12 legacy tests in `test_retry.py`, `test_users.py`, `test_client.py`, `test_cli.py`, `test_pagination.py` + the naive-clock `stamp()` helpers (same commit as the auth fix, or the suite becomes host-clock-dependent).
 
 **Not in scope:** no new features, no CI changes, no weakening of any property or coverage gate. (One dependency change was forced during execution: `hypothesis` added to the dev group — see owner decisions.)
 
 ## Definition of done
 
-`make lint` clean · `make test` → **66 passed** · properties green at 1000 examples per strategy · `make cov` at 100% line/branch. One defect per commit, suite green after each.
+`make lint` clean · `make test` → **66 passed** · properties green at 1000 examples per strategy · coverage 94% total, identical to base; all five fixed modules at 100%. One defect per commit, suite green after each.

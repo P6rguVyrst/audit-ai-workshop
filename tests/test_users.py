@@ -121,6 +121,14 @@ def test_backs_off_between_attempts(mock_get, no_sleep):
 
 
 @patch("accountsync.users.requests.get")
+def test_retries_must_be_at_least_one(mock_get):
+    with pytest.raises(ValueError, match="retries must be >= 1"):
+        fetch_user(42, retries=0)
+
+    mock_get.assert_not_called()
+
+
+@patch("accountsync.users.requests.get")
 def test_upstream_outage_raises_instead_of_returning_none(mock_get):
     """A dead upstream is reported, not swallowed into a None return."""
     mock_get.side_effect = requests.ConnectionError("connection reset by peer")
