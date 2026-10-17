@@ -33,6 +33,7 @@ accountsync = "accountsync.cli:main"
 
 [dependency-groups]
 dev = [
+    "hypothesis>=6.170.1",
     "pytest>=8.2",
     "pytest-cov>=5.0",
     "ruff>=0.6",
