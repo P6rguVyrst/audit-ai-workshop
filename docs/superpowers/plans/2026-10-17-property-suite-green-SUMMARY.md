@@ -49,4 +49,4 @@ Library: `retry.py`, `users.py`, `config.py`, `auth.py`, `pagination.py`, one wr
 
 ## Definition of done
 
-`make lint` clean · `make test` → **66 passed** · properties green at 1000 examples per strategy · coverage 94% total, identical to base; all five fixed modules at 100%. One defect per commit, suite green after each.
+`make lint` clean · `make test` → **66 passed** · properties green at 1000 examples per strategy · coverage identical to base; retry/users/pagination/client at 100%; config and auth retain their pre-existing uncovered error paths. One defect per commit, suite green after each.

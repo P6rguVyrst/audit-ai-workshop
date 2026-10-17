@@ -673,7 +673,7 @@ Expected: all PASS.
 - [ ] **Step 4: Coverage**
 
 Run: `make cov`
-Expected: coverage 94% total, identical to base, with all five fixed modules at 100% line and branch (the new `raise last_error`, `max_pages` loop and deep-merge branches are exercised by the property suite; if any line is missed, add a focused example-based test for it before committing).
+Expected: coverage identical to base (the pre-existing uncovered error paths in `cli.py`, `config.py` and `auth.py` were never covered); retry/users/pagination/client at 100% line and branch (the new `raise last_error`, `max_pages` loop and deep-merge branches are exercised by the property suite).
 
 - [ ] **Step 5: Final commit (if Steps 1–4 produced changes)**
 
