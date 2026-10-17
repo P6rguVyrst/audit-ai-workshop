@@ -1,6 +1,6 @@
 """Small builders shared by the tests."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from unittest.mock import Mock
 
 import requests
@@ -9,8 +9,8 @@ from accountsync.auth import ISO_FORMAT
 
 
 def stamp(delta):
-    """An ``expires_at`` timestamp ``delta`` away from now."""
-    return (datetime.now() + delta).strftime(ISO_FORMAT)
+    """An ``expires_at`` timestamp ``delta`` away from *UTC* now."""
+    return (datetime.now(UTC) + delta).strftime(ISO_FORMAT)
 
 
 def ok_response(payload):

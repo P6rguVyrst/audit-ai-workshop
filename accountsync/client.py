@@ -63,7 +63,8 @@ class AccountsClient:
         """Every user visible to this tenant, across all pages."""
 
         def page(page_number, size):
-            return list_users_page(page_number, size, base_url=self.base_url)
+            data = list_users_page(page_number, size, base_url=self.base_url)
+            return data or None  # an empty page means the collection ended
 
         return fetch_all(page, page_size=page_size)
 

@@ -6,7 +6,7 @@ The auth server returns ``{"access_token": ..., "expires_at": ...}`` where
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from accountsync.errors import AuthError
 
@@ -17,8 +17,13 @@ DEFAULT_SKEW_SECONDS = 30
 
 
 def parse_expiry(expires_at):
-    """Parse an ISO-8601 UTC timestamp such as ``2026-08-30T12:00:00Z``."""
-    return datetime.strptime(expires_at, ISO_FORMAT)
+    """Parse an ISO-8601 UTC timestamp such as ``2026-08-30T12:00:00Z``.
+
+    The result is timezone-aware (UTC): a naive datetime would be
+    interpreted in the machine's local timezone, making expiry answers
+    depend on where the process happens to run.
+    """
+    return datetime.strptime(expires_at, ISO_FORMAT).replace(tzinfo=UTC)
 
 
 def is_expired(expires_at, skew_seconds=DEFAULT_SKEW_SECONDS):
@@ -29,12 +34,12 @@ def is_expired(expires_at, skew_seconds=DEFAULT_SKEW_SECONDS):
     request with a token that dies in flight.
     """
     expiry = parse_expiry(expires_at)
-    return datetime.now() >= expiry - timedelta(seconds=skew_seconds)
+    return datetime.now(UTC) >= expiry - timedelta(seconds=skew_seconds)
 
 
 def seconds_remaining(expires_at):
     """Seconds until the token expires (0 if it already has)."""
-    delta = parse_expiry(expires_at) - datetime.now()
+    delta = parse_expiry(expires_at) - datetime.now(UTC)
     return max(0.0, delta.total_seconds())
 
 

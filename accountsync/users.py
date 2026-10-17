@@ -8,14 +8,25 @@ BASE_URL = "https://api.example.com"
 
 
 def fetch_user(user_id, retries=3, backoff=0.5):
-    """Fetch a user record, retrying on transient network errors."""
+    """Fetch a user record, retrying on transient network errors.
+
+    Sleeps only between attempts. When every attempt fails, the last
+    ``RequestException`` is re-raised rather than returning ``None``.
+    Raises ``ValueError`` if ``retries < 1``.
+    """
+    if retries < 1:
+        raise ValueError(f"retries must be >= 1, got {retries!r}")
+    last_error = None
     for attempt in range(retries):
+        if attempt:
+            time.sleep(backoff * 2 ** (attempt - 1))
         try:
             resp = requests.get(f"{BASE_URL}/users/{user_id}", timeout=5)
             resp.raise_for_status()
             return resp.json()
-        except requests.RequestException:
-            time.sleep(backoff * 2**attempt)
+        except requests.RequestException as exc:
+            last_error = exc
+    raise last_error
 
 
 def list_users_page(page_number, page_size, *, base_url=BASE_URL, timeout=5):

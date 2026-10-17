@@ -32,7 +32,8 @@ def test_get_user_uses_the_configured_retry_count(mock_get, fresh_token):
     mock_get.side_effect = requests.ConnectionError("connection reset by peer")
     client = AccountsClient(config={"retries": 5}, token=fresh_token)
 
-    client.get_user(42)
+    with pytest.raises(requests.RequestException):
+        client.get_user(42)
 
     assert mock_get.call_count == 5
 
@@ -42,18 +43,22 @@ def test_list_users_walks_every_page(mock_get, fresh_token):
     mock_get.side_effect = [
         ok_response({"data": [{"id": i} for i in range(10)]}),
         ok_response({"data": [{"id": i} for i in range(10, 17)]}),
+        ok_response({"data": []}),  # end of the collection
     ]
     client = AccountsClient(token=fresh_token)
 
     users = client.list_users(page_size=10)
 
     assert [u["id"] for u in users] == list(range(17))
-    assert mock_get.call_count == 2
+    assert mock_get.call_count == 3
 
 
 @patch("accountsync.users.requests.get")
 def test_sync_users_writes_json(mock_get, tmp_path, fresh_token):
-    mock_get.return_value = ok_response({"data": [{"id": 1}, {"id": 2}]})
+    mock_get.side_effect = [
+        ok_response({"data": [{"id": 1}, {"id": 2}]}),
+        ok_response({"data": []}),  # end of the collection
+    ]
     destination = tmp_path / "out" / "users.json"
 
     written = AccountsClient(token=fresh_token).sync_users(destination, page_size=10)

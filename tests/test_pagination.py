@@ -9,7 +9,8 @@ def make_api(records, page_size):
     def fetch_page(page_number, size):
         assert size == page_size
         start = page_number * size
-        return records[start : start + size]
+        page = records[start : start + size]
+        return page or None  # end-of-data is signalled explicitly
 
     return fetch_page
 
@@ -39,7 +40,8 @@ def test_requests_pages_in_order():
     def fetch_page(page_number, size):
         seen.append(page_number)
         start = page_number * size
-        return list(range(30))[start : start + size]
+        page = list(range(30))[start : start + size]
+        return page or None  # end-of-data is signalled explicitly
 
     fetch_all(fetch_page, page_size=10)
     assert seen == [0, 1, 2, 3]
