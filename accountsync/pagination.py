@@ -16,6 +16,9 @@ def fetch_all(fetch_page, page_size=DEFAULT_PAGE_SIZE, max_pages=DEFAULT_MAX_PAG
     End-of-data is *explicit*: a short page is reported as-is, because
     endpoints that filter after paginating legitimately return short or
     empty pages mid-stream. At most ``max_pages`` pages are requested.
+    When the cap is reached, whatever has been collected so far is returned
+    as-is; a caller that needs a completeness guarantee must pass a bound
+    it trusts.
     """
     records = []
     for page_number in range(max_pages):
