@@ -1,16 +1,16 @@
 """Tests for accountsync.auth."""
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from accountsync.auth import ISO_FORMAT, is_expired, parse_expiry, seconds_remaining
 
 
 def _stamp(delta):
-    return (datetime.now() + delta).strftime(ISO_FORMAT)
+    return (datetime.now(UTC) + delta).strftime(ISO_FORMAT)
 
 
 def test_parses_iso_timestamp():
-    assert parse_expiry("2026-08-30T12:00:00Z") == datetime(2026, 8, 30, 12, 0, 0)
+    assert parse_expiry("2026-08-30T12:00:00Z") == datetime(2026, 8, 30, 12, 0, 0, tzinfo=UTC)
 
 
 def test_token_in_the_past_is_expired():
