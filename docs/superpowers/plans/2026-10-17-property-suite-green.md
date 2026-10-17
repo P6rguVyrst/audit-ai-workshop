@@ -132,7 +132,7 @@ Expected: all PASS. (The two sleep-count tests still fail if the `pass` stub is 
 - [ ] **Step 4: Run the rest of the suite for regressions**
 
 Run: `uv run pytest -q`
-Expected: the 10 baseline failures minus `test_retry_is_total` → **9 failed**, no *new* failures.
+Expected (corrected during execution): **8 failed, 59 passed**. The retry fix flips *two* property tests: `test_retry_is_total` and, through the client layer, `test_refresh_token_reports_the_real_error` — same root cause (the old code returned `None` from `fetch_with_retry`, so `Token.from_payload(None)` masked the outage as `AuthError`). No *new* failures.
 
 - [ ] **Step 5: Commit**
 
@@ -233,7 +233,7 @@ Expected: all PASS (the `None`-return fixes cascade into `test_client_get_user_i
 - [ ] **Step 4: Run the full suite**
 
 Run: `uv run pytest -q`
-Expected: **7 failed** (baseline 10 − retry totality − retry sleeps), no new failures.
+Expected (corrected during execution): **6 failed, 61 passed**. The `fetch_user` fix flips `test_fetch_user_is_total` (its else-branch now raises) and `test_client_get_user_is_total`; the two sleep-count properties stay red on their un-completed stubs. No new failures.
 
 - [ ] **Step 5: Commit**
 
@@ -289,7 +289,7 @@ Expected: `test_defaults_are_never_contaminated` PASSES. The two merge propertie
 - [ ] **Step 3: Run the full suite**
 
 Run: `uv run pytest -q`
-Expected: **7 failed** (same set as after Task 3), no new failures.
+Expected: **6 failed** (same set as after Task 3 — the config fix flips `test_defaults_are_never_contaminated` but the two merge properties stay red on stubs), no new failures.
 
 - [ ] **Step 4: Commit**
 
