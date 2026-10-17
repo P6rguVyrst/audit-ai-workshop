@@ -79,7 +79,10 @@ def test_user_prints_the_record(mock_get, capsys):
 
 @patch("accountsync.users.requests.get")
 def test_sync_writes_the_destination_file(mock_get, in_tmp_cwd, capsys):
-    mock_get.return_value = ok_response({"data": [{"id": 1}]})
+    mock_get.side_effect = [
+        ok_response({"data": [{"id": 1}]}),
+        ok_response({"data": []}),  # end of the collection
+    ]
     destination = in_tmp_cwd / "users.json"
 
     assert main(["sync", str(destination), "--page-size", "10"]) == 0

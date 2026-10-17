@@ -2,20 +2,25 @@
 
 DEFAULT_PAGE_SIZE = 100
 
+#: Safety cap on pages walked in one :func:`fetch_all` call, so a
+#: pathological endpoint that never signals end-of-data cannot loop the
+#: client forever. Callers pass their own bound when they want one.
+DEFAULT_MAX_PAGES = 1000
 
-def fetch_all(fetch_page, page_size=DEFAULT_PAGE_SIZE):
+
+def fetch_all(fetch_page, page_size=DEFAULT_PAGE_SIZE, max_pages=DEFAULT_MAX_PAGES):
     """Collect every record from a paginated endpoint.
 
-    ``fetch_page(page_number, page_size)`` must return a list of records for
-    that page. Pages are requested until the endpoint returns a page that is
-    not full, which marks the end of the result set.
+    ``fetch_page(page_number, page_size)`` returns the list of records on
+    that page, and signals the end of the result set by returning ``None``.
+    End-of-data is *explicit*: a short page is reported as-is, because
+    endpoints that filter after paginating legitimately return short or
+    empty pages mid-stream. At most ``max_pages`` pages are requested.
     """
     records = []
-    page_number = 0
-    while True:
+    for page_number in range(max_pages):
         page = fetch_page(page_number, page_size)
-        records.extend(page)
-        if len(page) < page_size:
+        if page is None:
             break
-        page_number += 1
+        records.extend(page)
     return records
