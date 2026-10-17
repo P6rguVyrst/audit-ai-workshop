@@ -36,12 +36,17 @@ The workshop ships pairs of tests that cannot both hold; the legacy example-base
 
 **Pagination contract change.** No single default page cap satisfies both pagination properties (the filtering property needs up to 201 pages; the cap property must stop within 100). Resolution: the cap is the *caller's* decision — `fetch_all` gains `max_pages` (default 1000), and the pathological-endpoint property passes `max_pages=100` explicitly at its call site. This edits one line beyond the marked `TODO` in that test.
 
+## Owner decisions made during execution (2026-10-17)
+
+1. **UTC-only.** "There is one timezone and only one timezone: UTC." The library still pins UTC explicitly in code (parse as UTC, compare against `now(UTC)`) — the defect is that it silently reads the *host* clock, and host TZ is not guaranteed even in a UTC-only world. The timezone-matrix property (`test_expiry_is_timezone_invariant`) and its `tzset` machinery are **removed** rather than completed; they test a world that does not exist here. Suite total becomes 66 tests, not 67.
+2. **`hypothesis` added to dev dependencies** (commit `9454d7d`) — it was missing, so plain `uv run pytest` silently skipped the entire property module. Required for any of this work to be verifiable.
+
 ## Blast radius
 
-Library: `retry.py`, `users.py`, `config.py`, `auth.py`, `pagination.py`, one wrapper in `client.py`. Tests: complete 10 stubs in `test_properties.py`; update 8 legacy tests in `test_retry.py`, `test_users.py`, `test_client.py`, `test_cli.py`, `test_pagination.py` + the naive-clock `stamp()` helpers (same commit as the auth fix, or the suite becomes TZ-dependent).
+Library: `retry.py`, `users.py`, `config.py`, `auth.py`, `pagination.py`, one wrapper in `client.py`. Tests: complete 9 stubs and remove the tz-matrix property in `test_properties.py`; update 8 legacy tests in `test_retry.py`, `test_users.py`, `test_client.py`, `test_cli.py`, `test_pagination.py` + the naive-clock `stamp()` helpers (same commit as the auth fix, or the suite becomes host-clock-dependent).
 
-**Not in scope:** no new features, no dependency or CI changes, no weakening of any property or coverage gate.
+**Not in scope:** no new features, no CI changes, no weakening of any property or coverage gate. (One dependency change was forced during execution: `hypothesis` added to the dev group — see owner decisions.)
 
 ## Definition of done
 
-`make lint` clean · `make test` → **67 passed** · properties green at 1000 examples per strategy · `make cov` at 100% line/branch. Eight commits, one defect per commit, suite green after each.
+`make lint` clean · `make test` → **66 passed** · properties green at 1000 examples per strategy · `make cov` at 100% line/branch. One defect per commit, suite green after each.

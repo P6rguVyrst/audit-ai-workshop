@@ -43,6 +43,8 @@ Expected: **10 failed, 57 passed** — the failures are the property tests liste
 | `test_parse_expiry_round_trips_an_aware_datetime` | `parse_expiry` returns a naive datetime |
 | `test_walks_a_filtering_endpoint_completely` | short-page heuristic stops early (and the stub returns `[]`) |
 
+> **Amendment during execution:** `hypothesis` was missing from the `dev` dependency group — plain `uv run pytest` silently skipped the whole property module (54 passed / 1 skipped). Added in commit `9454d7d` (`uv add --group dev hypothesis`); the 10-failed/57-passed baseline above is now reachable without `--with`.
+
 - [ ] **Step 3: Commit the rename**
 
 ```bash
@@ -378,7 +380,9 @@ def seconds_remaining(expires_at):
 
 Run: `uv run pytest tests/test_auth.py tests/test_cli.py tests/test_client.py tests/test_properties.py::test_parse_expiry_round_trips_an_aware_datetime -q`
 
-Expected: `test_parse_expiry_round_trips_an_aware_datetime` still FAILS — it has an `assert True` stub (Task 7) and its failing assert (`parsed.tzinfo is not None`) will only pass after this fix, which is the point. Everything else PASSES, including `test_expiry_is_timezone_invariant`... which cannot run yet (invalid `""` strategies, Task 7). Confirm the actual result: all auth/client/cli tests pass, one property failure.
+Expected: `test_parse_expiry_round_trips_an_aware_datetime` still FAILS — it has an `assert True` stub (Task 7) and its failing assert (`parsed.tzinfo is not None`) will only pass after this fix, which is the point. Everything else PASSES. Confirm the actual result: all auth/client/cli tests pass, one property failure.
+
+> **Owner decision (UTC-only):** the deployment has exactly one timezone — UTC. The fix here pins UTC explicitly in code (parse as UTC, compare against `now(UTC)`), because the defect is *silently reading the host clock*, and host TZ is not guaranteed even in a UTC-only world (e.g. macOS dev machines). The tz-matrix property (`test_expiry_is_timezone_invariant` and its `tzset` machinery) tests a world that does not exist here; it is **removed** in Task 7 rather than completed.
 
 - [ ] **Step 4: Run the full suite**
 
@@ -597,16 +601,15 @@ in `test_result_shares_no_mutable_state_with_defaults`:
             assert merged[key] is not value
 ```
 
-- [ ] **Step 4: Part 5 — timezone strategies and round-trip** (`tests/test_properties.py:332-333` and `:358`)
+- [ ] **Step 4: Part 5 — remove the tz matrix (UTC-only deployment), keep the round-trip** (`tests/test_properties.py:289-358`)
 
-Replace the two empty strategies:
+Per the owner's decision, the deployment has exactly one timezone — UTC — so a two-observer timezone matrix tests a world that does not exist here. Delete the machinery and the property:
 
-```python
-    tz_a=st.sampled_from(TIMEZONES),
-    tz_b=st.sampled_from(TIMEZONES),
-```
+- the `TIMEZONES` list, `OFFSET_QUANTUM` constant, `requires_tzset` marker, `_tz` and `_under_tz` helpers (the block from `#: Includes 45-minute offsets...` down to the end of `test_expiry_is_timezone_invariant`)
 
-and complete the round-trip assert (the `ISO_FORMAT` template has no microseconds, so the instant is quantised to whole seconds):
+Expiry correctness under UTC-only remains witnessed by `test_parse_expiry_round_trips_an_aware_datetime`, the `test_token_*` skew tests, and the CLI `token` tests.
+
+Then complete the round-trip assert (the `ISO_FORMAT` template has no microseconds, so the instant is quantised to whole seconds):
 
 ```python
     assert parsed == dt.replace(microsecond=0)
@@ -637,7 +640,7 @@ In `test_caps_iteration_on_an_endpoint_that_never_returns_a_short_page` (the cap
 - [ ] **Step 6: Run the property suite**
 
 Run: `uv run pytest tests/test_properties.py -q`
-Expected: **all PASS**. If `test_expiry_is_timezone_invariant` or `test_walks_a_filtering_endpoint_completely` still fails, re-run with `-vv` and check the counterexample against the Task 4/5/6 library fixes before touching the test again.
+Expected: **all PASS**. If `test_walks_a_filtering_endpoint_completely` still fails, re-run with `-vv` and check the counterexample against the Task 4/5/6 library fixes before touching the test again.
 
 - [ ] **Step 7: Commit**
 
@@ -658,7 +661,7 @@ Expected: clean (no output, exit 0). If formatting drifts, run `make format` and
 - [ ] **Step 2: Full suite**
 
 Run: `make test`
-Expected: **67 passed**.
+Expected: **66 passed** (the tz-matrix property was removed per the UTC-only owner decision).
 
 - [ ] **Step 3: Property hardening run** (more examples than CI's 50 before trusting green)
 
