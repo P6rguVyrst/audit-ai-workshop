@@ -94,7 +94,8 @@ def test_retries_on_http_500(mock_get):
 def test_gives_up_after_the_retry_limit(mock_get):
     mock_get.side_effect = requests.ConnectionError("connection reset by peer")
 
-    fetch_user(42, retries=3)
+    with pytest.raises(requests.RequestException):
+        fetch_user(42, retries=3)
 
     assert mock_get.call_count == 3
 
@@ -103,23 +104,26 @@ def test_gives_up_after_the_retry_limit(mock_get):
 def test_respects_a_custom_retry_count(mock_get):
     mock_get.side_effect = requests.ConnectionError("connection reset by peer")
 
-    fetch_user(42, retries=5)
+    with pytest.raises(requests.RequestException):
+        fetch_user(42, retries=5)
 
     assert mock_get.call_count == 5
 
 
 @patch("accountsync.users.requests.get")
-def test_backs_off_exponentially(mock_get, no_sleep):
+def test_backs_off_between_attempts(mock_get, no_sleep):
     mock_get.side_effect = requests.ConnectionError("connection reset by peer")
 
-    fetch_user(42, retries=3, backoff=0.5)
+    with pytest.raises(requests.RequestException):
+        fetch_user(42, retries=3, backoff=0.5)
 
-    assert [call.args[0] for call in no_sleep.call_args_list] == [0.5, 1.0, 2.0]
+    assert [call.args[0] for call in no_sleep.call_args_list] == [0.5, 1.0]
 
 
 @patch("accountsync.users.requests.get")
-def test_upstream_outage_does_not_raise(mock_get):
-    """A dead upstream must not blow up the request handler."""
+def test_upstream_outage_raises_instead_of_returning_none(mock_get):
+    """A dead upstream is reported, not swallowed into a None return."""
     mock_get.side_effect = requests.ConnectionError("connection reset by peer")
 
-    fetch_user(42)
+    with pytest.raises(requests.RequestException):
+        fetch_user(42)

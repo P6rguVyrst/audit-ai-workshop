@@ -32,7 +32,8 @@ def test_get_user_uses_the_configured_retry_count(mock_get, fresh_token):
     mock_get.side_effect = requests.ConnectionError("connection reset by peer")
     client = AccountsClient(config={"retries": 5}, token=fresh_token)
 
-    client.get_user(42)
+    with pytest.raises(requests.RequestException):
+        client.get_user(42)
 
     assert mock_get.call_count == 5
 
