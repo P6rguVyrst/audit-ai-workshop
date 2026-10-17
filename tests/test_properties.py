@@ -1,27 +1,30 @@
-"""Property-based tests to be completed.
+"""Property-based tests for the audit's counterexample behaviours.
 
-Search for "TODO" and follow the instructions.
+**These tests fail on the buggy tree, by design.** They are the
+counterexamples the rest of the suite cannot reach. Two of them are the
+direct inverse of tests that shipped with the original tree:
 
-**These tests fail on the current tree, by design.** They are the
-counterexamples the rest of the suite cannot reach. Two of them are the direct
-inverse of tests that currently pass:
+* ``test_retry_is_total`` contradicts the original
+  ``test_retry.py::test_survives_total_failure`` (removed: it asserted the
+  silent-None contract the retry fix corrected)
+* ``test_never_sleeps_after_the_last_attempt`` contradicted the original
+  ``test_users.py::test_backs_off_exponentially`` (now
+  ``test_backs_off_between_attempts``)
 
-* ``test_retry_is_total`` contradicts ``test_retry.py::test_survives_total_failure``
-* ``test_never_sleeps_after_the_last_attempt`` contradicts
-  ``test_users.py::test_backs_off_exponentially``
-
-Neither pair can hold at once. Choosing between them is part of the exercise.
+Neither pair could hold at once. Choosing between them was part of the exercise.
 
 Notes on the constraints this file was written under:
 
 * ``database=None`` means no example database is written, so a counterexample is
   not replayed on the next run.
-* No ``time-machine`` dependency: the timezone properties quantise the generated
-  expiry to 5-minute steps, so no example can land within clock-drift distance
-  of a skew boundary and the real clock is safe to read.
-* ``tests/helpers.py:stamp()`` builds its "UTC" timestamps from the local clock,
-  so nothing here may use it — a helper that shares the code's assumption cannot
-  witness a violation of it. These tests construct their own timestamps.
+* No ``time-machine`` dependency: the one property that touches expiry
+  timestamps (``test_parse_expiry_round_trips_an_aware_datetime``) serialises
+  and reparses a fixed generated instant, so the wall clock is never consulted
+  and clock drift cannot flake the run.
+* ``tests/helpers.py:stamp()`` builds its "UTC" timestamps from the local
+  clock, so nothing here may use it — a helper that shares an assumption
+  cannot witness a violation of it. These tests construct their own
+  timestamps.
 """
 
 import contextlib
@@ -339,4 +342,4 @@ def test_caps_iteration_on_an_endpoint_that_never_returns_a_short_page(page_size
         assert next(calls) < max_requests, f"no cap: still requesting after {max_requests} pages"
         return list(range(size))  # always full - no page is ever short
 
-    fetch_all(fetch_page, page_size=page_size, max_pages=100)
+    fetch_all(fetch_page, page_size=page_size, max_pages=max_requests)
